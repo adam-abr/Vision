@@ -1,0 +1,69 @@
+#This function takes in an rgb_image of a traffic light, and returns whether it's a green, yellow or red light.
+
+
+def create_feature(rgb_image):
+    
+    
+    inverted_image = (255-rgb_image) #invert image
+
+    image = cv2.cvtColor(inverted_image, cv2.COLOR_RGB2HSV) #convert RGB to HSV
+    
+ 
+    filter = np.array([[0,-0.5,0],
+                      [-0.5,2,-0.5],
+                      [0,-0.5,0]]) #create image filter
+    
+    filtered_image = cv2.filter2D(image, -2, filter) #filter image
+    
+   
+
+    #code below  used during development, however unused now
+    #general_h = filtered_image[:,:,0]
+    #general_s = filtered_image[:,:,1]
+    #general_v = filtered_image[:,:,2] 
+    
+    
+    #below code used during development to pick the most appropriate chanel
+    #f, (dx1, dx2, dx3) = plt.subplots(1, 3, figsize=(20,20))
+    #dx1.imshow(general_h)
+    #dx2.imshow(general_s)
+    #dx3.imshow(general_v)    
+ 
+    #divide image into thirds
+    top = filtered_image[0:13,8:24]
+    middle = filtered_image[12:20,8:24]
+    bottom = filtered_image[19:32,8:24]
+    
+    #Used during development, however only Saturation chanel ended up being used in the end
+    #top_h = top[:,:,0]
+    #top_v = top[:,:,2]
+    #middle_h = middle[:,:,0]
+    #middle_v = middle[:,:,2]
+    #bottom_h = bottom[:,:,0]
+    #bottom_v = bottom[:,:,2]
+
+    #Create thirds using only saturation chanel.
+    top_s = top[:,:,1]    
+    middle_s = middle[:,:,1]    
+    bottom_s = bottom[:,:,1]    
+    
+    #Create values for each saturated chanel.
+    top_value = (np.sum(top[:,:,1]))
+    middle_value = (np.sum(middle_s))
+    bottom_value = (np.sum(bottom_s))
+    
+    feature = [0,0,0] #create a default feature
+    
+    #pick a third with the biggest value
+    if top_value > middle_value and top_value > bottom_value:
+        return [1,0,0]
+    if bottom_value>top_value and bottom_value > middle_value:
+        return [0,0,1]
+    if middle_value>top_value and middle_value > bottom_value:
+        return [0,1,0]
+
+    #I'm aware I could have made this more efficient, however left this to show development. 
+    #For example top_s and top_value couldve simply been made to top_value = np.sum(top[:,:,1]).
+    #or instead of inverted_image and image, I couldve had image = cv2.cvtColor(255-rgb_image, cv2.COLOR_RGB2HSV)
+  
+    return feature
